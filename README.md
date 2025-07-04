@@ -4,15 +4,6 @@ Ini adalah bagian backend dari Sistem Informasi Bengkel Han’s Motor. Backend i
 
 ---
 
-## 🧰 Teknologi
-- Laravel 11
-- PHP 8.3
-- MySQL
-- Laravel Sanctum (Autentikasi Token)
-- Spatie Laravel Permission (Role & Akses)
-
----
-
 ## 📦 Instalasi
 
 ### 1. Clone & Masuk Folder
@@ -48,27 +39,3 @@ php artisan serve
 ```
 
 ---
-
-## 🔐 Autentikasi
-- Endpoint Login: `POST /api/login`
-- Token disimpan di frontend dan dikirim via header:
-  ```
-  Authorization: Bearer {token}
-  ```
-- Role: super_admin, pemilik, admin, kasir
-
----
-
-## 📁 Struktur Penting
-- `app/Http/Controllers/Api/` – API controller
-- `routes/api.php` – Routing endpoint API
-- `database/seeders/` – Seeder data awal user & role
-
----
-
-## 🚫 File di .gitignore
-```
-/vendor
-.env
-*.log
-```
