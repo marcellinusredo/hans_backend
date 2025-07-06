@@ -25,6 +25,7 @@ class RoleController extends Controller
             $roles = Role::when($loggedInRole !== 'Super Admin', function ($query) {
                 $query->where('nama_role', '!=', 'Super Admin');
             })->get();
+
             return response()->json([
                 'status' => true,
                 'data' => $roles
