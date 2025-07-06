@@ -7,6 +7,7 @@ use App\Helpers\RoleHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class RoleController extends Controller
 {
@@ -17,9 +18,13 @@ class RoleController extends Controller
             //validasi role
             RoleHelper::allowOnly(['Super Admin', 'Pemilik']);
 
-            // Ambil semua role kecuali 'Super Admin'
-            $roles = Role::where('nama_role', '!=', 'Super Admin')->get();
+            // Ambil role user yang login
+            $loggedInRole = Auth::user()->role->nama_role ?? '';
 
+            // Ambil semua role atau hanya yang bukan Super Admin
+            $roles = Role::when($loggedInRole !== 'Super Admin', function ($query) {
+                $query->where('nama_role', '!=', 'Super Admin');
+            })->get();
             return response()->json([
                 'status' => true,
                 'data' => $roles

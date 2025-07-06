@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class StaffController extends Controller
 {
@@ -32,12 +33,19 @@ class StaffController extends Controller
             }
             $sortDir = strtolower($sortDir) === 'desc' ? 'desc' : 'asc';
 
+            // Ambil role user yang login
+            $loggedInRole = Auth::user()->role->nama_role ?? '';
+
             // Bangun query
             $query = Staff::with(['role:id_role,nama_role'])
-                ->select('id_staff', 'role_id', 'nama_staff', 'nomor_telp_staff', 'alamat_staff', 'username_staff')
-                ->whereHas('role', function ($q) {
+                ->select('id_staff', 'role_id', 'nama_staff', 'nomor_telp_staff', 'alamat_staff', 'username_staff');
+
+            // Jika bukan Super Admin, sembunyikan staff yang punya role Super Admin
+            if ($loggedInRole !== 'Super Admin') {
+                $query->whereHas('role', function ($q) {
                     $q->where('nama_role', '!=', 'Super Admin');
                 });
+            }
 
             // Tambahkan filter pencarian jika ada
             if (!empty($search)) {
@@ -191,10 +199,11 @@ class StaffController extends Controller
             //cari data
             $staff = Staff::find($id);
             if (!$staff) {
-                return response()->json(['
+                return response()->json([
+                    '
                 status' => false,
-                'message' => 'Staff tidak ditemukan'
-            ], 404);
+                    'message' => 'Staff tidak ditemukan'
+                ], 404);
             }
 
             //validasi input
