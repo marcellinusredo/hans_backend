@@ -17,9 +17,12 @@ class RoleController extends Controller
             //validasi role
             RoleHelper::allowOnly(['Super Admin', 'Pemilik']);
 
+            // Ambil semua role kecuali 'Super Admin'
+            $roles = Role::where('nama_role', '!=', 'Super Admin')->get();
+
             return response()->json([
                 'status' => true,
-                'data' => Role::all()
+                'data' => $roles
             ]);
         } catch (\Throwable $th) {
             return response()->json([

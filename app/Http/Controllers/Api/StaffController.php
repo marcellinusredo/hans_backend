@@ -17,7 +17,7 @@ class StaffController extends Controller
         try {
             //validasi role
             RoleHelper::allowOnly(['Super Admin', 'Pemilik']);
-            
+
             // Ambil parameter dari request dengan default jika tidak ada
             $perPage = $request->input('per_page', 5);
             $page = $request->input('page', 1);
@@ -34,7 +34,10 @@ class StaffController extends Controller
 
             // Bangun query
             $query = Staff::with(['role:id_role,nama_role'])
-                ->select('id_staff', 'role_id', 'nama_staff', 'nomor_telp_staff', 'alamat_staff', 'username_staff');
+                ->select('id_staff', 'role_id', 'nama_staff', 'nomor_telp_staff', 'alamat_staff', 'username_staff')
+                ->whereHas('role', function ($q) {
+                    $q->where('nama_role', '!=', 'Super Admin');
+                });
 
             // Tambahkan filter pencarian jika ada
             if (!empty($search)) {
@@ -189,7 +192,7 @@ class StaffController extends Controller
             $staff = Staff::find($id);
             if (!$staff) {
                 return response()->json(['
-                status' => false, 
+                status' => false,
                 'message' => 'Staff tidak ditemukan'
             ], 404);
             }
