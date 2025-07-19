@@ -26,5 +26,14 @@ class StaffSeeder extends Seeder
             'password_staff' => Hash::make('superadmin'), // Ganti dengan password yang kuat
             'role_id' => $superAdminRole->id_role,
         ]);
+
+        Staff::create([
+            'nama_staff' => 'Pemilik',
+            'nomor_telp_staff' => '08123456789',
+            'alamat_staff' => 'Klaten',
+            'username_staff' => 'superadmin',
+            'password_staff' => Hash::make('pemilik123'), // Ganti dengan password yang kuat
+            'role_id' => $ownerRole->id_role,
+        ]);
     }
 }

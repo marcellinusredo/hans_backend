@@ -8,7 +8,15 @@ use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
+use App\Exports\TransaksiExport;
+use App\Exports\PengadaanProdukExport;
+use App\Exports\ProdukTerlarisExport;
+use App\Exports\JasaTerlarisExport;
+use App\Exports\StokProdukExport;
+use App\Exports\KeuanganExport;
 
 class LaporanController extends Controller
 {
@@ -432,13 +440,13 @@ class LaporanController extends Controller
             $end = $request->query('end');
 
             return match ($jenis) {
-                'transaksi' => Excel::download(new \App\Exports\TransaksiExport($data, $start, $end), 'laporan-transaksi.xlsx'),
-                'pengadaan-produk' => Excel::download(new \App\Exports\PengadaanProdukExport($data, $start, $end), 'laporan-pengadaan-produk.xlsx'),
-                'produk-terlaris' => Excel::download(new \App\Exports\ProdukTerlarisExport($data, $start, $end), 'laporan-produk-terlaris.xlsx'),
-                'jasa-terlaris' => Excel::download(new \App\Exports\JasaTerlarisExport($data, $start, $end), 'laporan-jasa-terlaris.xlsx'),
-                'stok-produk' => Excel::download(new \App\Exports\StokProdukExport($data, $start, $end), 'laporan-stok-produk.xlsx'),
-                'keuangan' => Excel::download(new \App\Exports\KeuanganExport($data, $start, $end), 'laporan-keuangan.xlsx'),
-                default => abort(404, 'Jenis laporan tidak dikenali'),
+                'transaksi'         => Excel::download(new TransaksiExport($data, $start, $end), 'laporan-transaksi.xlsx'),
+                'pengadaan-produk'  => Excel::download(new PengadaanProdukExport($data, $start, $end), 'laporan-pengadaan-produk.xlsx'),
+                'produk-terlaris'   => Excel::download(new ProdukTerlarisExport($data, $start, $end), 'laporan-produk-terlaris.xlsx'),
+                'jasa-terlaris'     => Excel::download(new JasaTerlarisExport($data, $start, $end), 'laporan-jasa-terlaris.xlsx'),
+                'stok-produk'       => Excel::download(new StokProdukExport($data, $start, $end), 'laporan-stok-produk.xlsx'),
+                'keuangan'          => Excel::download(new KeuanganExport($data, $start, $end), 'laporan-keuangan.xlsx'),
+                default             => abort(404, 'Jenis laporan tidak dikenali'),
             };
         } catch (\Throwable $th) {
             return response()->json([
@@ -474,9 +482,29 @@ class LaporanController extends Controller
                 ], 404);
             }
 
+        // Tanggal hari ini sebagai folder
+        $tanggal = Carbon::now()->format('Y-m-d');
 
+        // Nama file yang aman
+        $safeJenis = Str::slug($jenis);
+        $fileName = "laporan_{$safeJenis}.pdf";
+
+        // Lokasi penyimpanan
+        $folder = "laporan/{$safeJenis}/{$tanggal}";
+        $relativePath = "{$folder}/{$fileName}";
+
+        // Jika belum ada, generate dan simpan PDF
+        if (!Storage::disk('public')->exists($relativePath)) {
             $pdf = Pdf::loadView($viewName, compact('data', 'start', 'end'));
-            return $pdf->download('laporan_' . $jenis . '.pdf');
+            Storage::disk('public')->put($relativePath, $pdf->output());
+        }
+
+        // Kembalikan URL publik ke frontend
+        return response()->json([
+            'success' => true,
+            'url' => asset("storage/{$relativePath}")
+        ]);
+
         } catch (\Throwable $e) {
             Log::error("Gagal export PDF: " . $e->getMessage());
             return response()->json([

@@ -86,9 +86,9 @@ class JasaController extends Controller
 
             //Validasi input
             $validator = Validator::make($request->all(), [
-                'nama_jasa' => 'required|string|max:255',
-                'harga_jasa' => 'required|numeric|min:0',
-                'deskripsi_jasa' => 'nullable|string',
+                'nama_jasa' => 'required|string|min:1|max:25',
+                'harga_jasa' => 'required|numeric|min:1000|max:999999999999999999',
+                'deskripsi_jasa' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -170,9 +170,9 @@ class JasaController extends Controller
 
             //validasi input
             $validator = Validator::make($request->all(), [
-                'nama_jasa' => 'required|string|max:255',
-                'harga_jasa' => 'required|numeric|min:0',
-                'deskripsi_jasa' => 'nullable|string',
+                'nama_jasa' => 'required|string|min:1|max:25',
+                'harga_jasa' => 'required|numeric|min:1000|max:999999999999999999',
+                'deskripsi_jasa' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {

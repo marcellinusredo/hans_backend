@@ -86,8 +86,8 @@ class KategoriController extends Controller
 
             //Validasi input
             $validator = Validator::make($request->all(), [
-                'nama_kategori' => 'required|string|max:255',
-                'deskripsi_kategori' => 'nullable|string',
+                'nama_kategori' => 'required|string|min:1|max:25',
+                'deskripsi_kategori' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -162,15 +162,15 @@ class KategoriController extends Controller
 
             if (!$kategori) {
                 return response()->json([
-                    'status' => false, 
+                    'status' => false,
                     'message' => 'Kategori tidak ditemukan'
                 ], 404);
             }
 
             //Validasi input
             $validator = Validator::make($request->all(), [
-                'nama_kategori' => 'required|string|max:255',
-                'deskripsi_kategori' => 'nullable|string',
+                'nama_kategori' => 'required|string|min:1|max:25',
+                'deskripsi_kategori' => 'nullable|string|max:255',
             ]);
 
             if ($validator->fails()) {

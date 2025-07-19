@@ -32,7 +32,7 @@ class SupplierController extends Controller
             }
             $sortDir = strtolower($sortDir) === 'desc' ? 'desc' : 'asc';
 
-            // Bangun query 
+            // Bangun query
             $query = Supplier::select('id_supplier', 'nama_supplier', 'nomor_telp_supplier', 'alamat_supplier');
 
             // Tambahkan filter pencarian jika ada
@@ -87,9 +87,9 @@ class SupplierController extends Controller
 
             //validasi input
             $validator = Validator::make($request->all(), [
-                'nama_supplier' => 'required|string|max:255',
-                'nomor_telp_supplier' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
-                'alamat_supplier' => 'nullable|string',
+                'nama_supplier' => 'required|string|min:1|max:25',
+                'nomor_telp_supplier' => ['nullable', 'regex:/^0[0-9]{9,14}$/'],
+                'alamat_supplier' => 'nullable|string|min:1|max:50',
             ]);
 
             if ($validator->fails()) {
@@ -170,9 +170,9 @@ class SupplierController extends Controller
 
             //validasi input
             $validator = Validator::make($request->all(), [
-                'nama_supplier' => 'required|string|max:255',
-                'nomor_telp_supplier' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
-                'alamat_supplier' => 'nullable|string',
+                'nama_supplier' => 'required|string|min:1|max:25',
+                'nomor_telp_supplier' => ['nullable', 'regex:/^0[0-9]{9,14}$/'],
+                'alamat_supplier' => 'nullable|string|min:1|max:50',
             ]);
 
             if ($validator->fails()) {

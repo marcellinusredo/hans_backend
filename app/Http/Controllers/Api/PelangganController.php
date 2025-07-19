@@ -86,9 +86,9 @@ class PelangganController extends Controller
 
             //validasi input
             $validator = Validator::make($request->all(), [
-                'nama_pelanggan' => 'required|string|max:255',
-                'alamat_pelanggan' => 'nullable|string',
-                'nomor_telp_pelanggan' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
+                'nama_pelanggan' => 'required|string|min:1|max:25',
+                'alamat_pelanggan' => 'nullable|string|max:50',
+                'nomor_telp_pelanggan' => ['nullable', 'regex:/^0[0-9]{9,14}$/'],
             ]);
 
             if ($validator->fails()) {
@@ -167,9 +167,9 @@ class PelangganController extends Controller
 
             //Validator input
             $validator = Validator::make($request->all(), [
-                'nama_pelanggan' => 'required|string|max:255',
-                'alamat_pelanggan' => 'nullable|string',
-                'nomor_telp_pelanggan' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
+                'nama_pelanggan' => 'required|string|min:1|max:25',
+                'alamat_pelanggan' => 'nullable|string|max:50',
+                'nomor_telp_pelanggan' => ['nullable', 'regex:/^0[0-9]{9,14}$/'],
             ]);
 
             if ($validator->fails()) {

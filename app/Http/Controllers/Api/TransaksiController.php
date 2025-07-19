@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\DetailTransaksiJasa;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class TransaksiController extends Controller
 {
@@ -98,10 +100,10 @@ class TransaksiController extends Controller
                 'pelanggan_id' => 'required|exists:pelanggan,id_pelanggan',
                 'staff_id' => 'required|exists:staff,id_staff',
                 'waktu_transaksi' => 'required|date',
-                'pembayaran_transaksi' => 'required|numeric|min:1',
+                'pembayaran_transaksi' => 'required|numeric|min:1|max:999999999999999999',
                 'detail_produk' => 'nullable|array',
                 'detail_produk.*.produk_id' => 'nullable|exists:produk,id_produk',
-                'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1',
+                'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1|max:2147483647',
                 'detail_jasa' => 'nullable|array',
                 'detail_jasa.*.jasa_id' => 'nullable|exists:jasa,id_jasa',
             ]);
@@ -264,10 +266,10 @@ class TransaksiController extends Controller
                 'pelanggan_id' => 'required|exists:pelanggan,id_pelanggan',
                 'staff_id' => 'required|exists:staff,id_staff',
                 'waktu_transaksi' => 'required|date',
-                'pembayaran_transaksi' => 'required|numeric|min:1',
+                'pembayaran_transaksi' => 'required|numeric|min:1000|max:999999999999999999',
                 'detail_produk' => 'nullable|array',
                 'detail_produk.*.produk_id' => 'nullable|exists:produk,id_produk',
-                'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1',
+                'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1|max:2147483647',
                 'detail_jasa' => 'nullable|array',
                 'detail_jasa.*.jasa_id' => 'nullable|exists:jasa,id_jasa',
             ]);
@@ -548,9 +550,26 @@ class TransaksiController extends Controller
                 'detail_transaksi_jasa.jasa'
             ])->findOrFail($id);
 
-            //cetak pdf
-            $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
-            return $pdf->download('invoice-transaksi-' . $transaksi->nomor_invoice_transaksi . '.pdf');
+            // Format tanggal & nama file
+            $tanggal = Carbon::parse($transaksi->tanggal_transaksi)->format('Y-m-d');
+            $safeInvoiceNumber = Str::slug($transaksi->nomor_invoice_transaksi); // lebih aman
+            $fileName = "invoice-transaksi-{$safeInvoiceNumber}.pdf";
+
+            // Path penyimpanan (relatif terhadap storage/app/public)
+            $folder = "invoice/transaksi/{$tanggal}";
+            $relativePath = "{$folder}/{$fileName}";
+
+            // Jika file belum ada, generate PDF dan simpan
+            if (!Storage::disk('public')->exists($relativePath)) {
+                $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
+                Storage::disk('public')->put($relativePath, $pdf->output());
+            }
+
+            // Kembalikan URL publik agar bisa dibuka frontend
+            return response()->json([
+                'status' => true,
+                'url' => asset("storage/{$relativePath}"),
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

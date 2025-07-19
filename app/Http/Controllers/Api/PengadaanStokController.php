@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\DetailPengadaanStok;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class PengadaanStokController extends Controller
 {
@@ -96,8 +99,8 @@ class PengadaanStokController extends Controller
                 'waktu_pengadaan_stok' => 'required|date',
                 'detail' => 'required|array|min:1',
                 'detail.*.produk_id' => 'required|exists:produk,id_produk',
-                'detail.*.jumlah_produk_detail_pengadaan_stok' => 'required|integer|min:1',
-                'detail.*.harga_produk_detail_pengadaan_stok' => 'required|numeric|min:0',
+                'detail.*.jumlah_produk_detail_pengadaan_stok' => 'required|integer|min:1|max:2147483647',
+                'detail.*.harga_produk_detail_pengadaan_stok' => 'required|numeric|min:1000|max:999999999999999999',
             ]);
 
             if ($validator->fails()) {
@@ -112,10 +115,10 @@ class PengadaanStokController extends Controller
 
             // Hitung total harga pengadaan stok
             $totalHarga = 0;
-                foreach ($request->detail as $detail) {
-                    $subtotal = $detail['jumlah_produk_detail_pengadaan_stok'] * $detail['harga_produk_detail_pengadaan_stok'];
-                    $totalHarga += $subtotal;
-                }
+            foreach ($request->detail as $detail) {
+                $subtotal = $detail['jumlah_produk_detail_pengadaan_stok'] * $detail['harga_produk_detail_pengadaan_stok'];
+                $totalHarga += $subtotal;
+            }
 
 
             // Simpan data pengadaan stok dengan total harga yang dihitung
@@ -129,18 +132,18 @@ class PengadaanStokController extends Controller
             ]);
 
             // Simpan detail pengadaan dan update stok produk
-                foreach ($request->detail as $detail) {
-                    $subtotal = $detail['jumlah_produk_detail_pengadaan_stok'] * $detail['harga_produk_detail_pengadaan_stok'];
-                    DetailPengadaanStok::create([
-                        'pengadaan_stok_id' => $pengadaan->id_pengadaan_stok,
-                        'produk_id' => $detail['produk_id'],
-                        'jumlah_produk_detail_pengadaan_stok' => $detail['jumlah_produk_detail_pengadaan_stok'],
-                        'harga_produk_detail_pengadaan_stok' => $detail['harga_produk_detail_pengadaan_stok'],
-                        'subtotal_produk_detail_pengadaan_stok' => $subtotal,
-                    ]);
-                    //Menambah jumlah stok
-                    Produk::tambahStok($detail['produk_id'], $detail['jumlah_produk_detail_pengadaan_stok']);
-                }
+            foreach ($request->detail as $detail) {
+                $subtotal = $detail['jumlah_produk_detail_pengadaan_stok'] * $detail['harga_produk_detail_pengadaan_stok'];
+                DetailPengadaanStok::create([
+                    'pengadaan_stok_id' => $pengadaan->id_pengadaan_stok,
+                    'produk_id' => $detail['produk_id'],
+                    'jumlah_produk_detail_pengadaan_stok' => $detail['jumlah_produk_detail_pengadaan_stok'],
+                    'harga_produk_detail_pengadaan_stok' => $detail['harga_produk_detail_pengadaan_stok'],
+                    'subtotal_produk_detail_pengadaan_stok' => $subtotal,
+                ]);
+                //Menambah jumlah stok
+                Produk::tambahStok($detail['produk_id'], $detail['jumlah_produk_detail_pengadaan_stok']);
+            }
 
             DB::commit();
 
@@ -202,8 +205,8 @@ class PengadaanStokController extends Controller
                 'waktu_pengadaan_stok' => 'required|date',
                 'detail' => 'required|array|min:1',
                 'detail.*.produk_id' => 'required|exists:produk,id_produk',
-                'detail.*.jumlah_produk_detail_pengadaan_stok' => 'required|integer|min:1',
-                'detail.*.harga_produk_detail_pengadaan_stok' => 'required|numeric|min:0',
+                'detail.*.jumlah_produk_detail_pengadaan_stok' => 'required|integer|min:1|max:2147483647',
+                'detail.*.harga_produk_detail_pengadaan_stok' => 'required|numeric|min:1000|max:999999999999999999',
             ]);
 
             if ($validator->fails()) {
@@ -383,9 +386,26 @@ class PengadaanStokController extends Controller
             $pengadaan = PengadaanStok::with(['staff', 'supplier', 'detail_pengadaan_stok.produk'])
                 ->findOrFail($id);
 
-            //buat pdf
-            $pdf = Pdf::loadView('invoice.pengadaan', compact('pengadaan'));
-            return $pdf->download('invoice-pengadaan-' . $pengadaan->nomor_invoice_pengadaan_stok . '.pdf');
+            // Format tanggal & nama file
+            $tanggal = Carbon::parse($pengadaan->tanggal_pengadaan_stok)->format('Y-m-d');
+            $safeInvoiceNumber = Str::slug($pengadaan->nomor_invoice_pengadaan_stok);
+            $fileName = "invoice-pengadaan-{$safeInvoiceNumber}.pdf";
+
+            // Path penyimpanan relatif terhadap storage/app/public
+            $folder = "invoice/pengadaan/{$tanggal}";
+            $relativePath = "{$folder}/{$fileName}";
+
+            // Cek jika belum ada, generate & simpan PDF
+            if (!Storage::disk('public')->exists($relativePath)) {
+                $pdf = Pdf::loadView('invoice.pengadaan', compact('pengadaan'));
+                Storage::disk('public')->put($relativePath, $pdf->output());
+            }
+
+            // Kirim URL publik ke frontend
+            return response()->json([
+                'status' => true,
+                'url' => asset("storage/{$relativePath}"),
+            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

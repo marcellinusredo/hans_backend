@@ -108,11 +108,11 @@ class StaffController extends Controller
             //validasi input
             $validator = Validator::make($request->all(), [
                 'role_id' => 'required|exists:role,id_role',
-                'nama_staff' => 'required|string|max:255',
+                'nama_staff' => 'required|string|max:25',
                 'nomor_telp_staff' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
-                'alamat_staff' => 'nullable|string',
-                'username_staff' => 'required|string|unique:staff,username_staff',
-                'password_staff' => 'required|string|max:255',
+                'alamat_staff' => 'nullable|string|max:50',
+                'username_staff' => 'required|string|unique:staff,username_staff|min:5|max:25',
+                'password_staff' => 'required|string|min:6|max:25',
             ]);
 
             if ($validator->fails()) {
@@ -209,10 +209,11 @@ class StaffController extends Controller
             //validasi input
             $validator = Validator::make($request->all(), [
                 'role_id' => 'required|exists:role,id_role',
-                'nama_staff' => 'required|string|max:255',
+                'nama_staff' => 'required|string|max:25',
                 'nomor_telp_staff' => ['nullable', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
-                'alamat_staff' => 'nullable|string',
-                'username_staff' => 'required|string|max:255|unique:staff,username_staff,' . $id . ',id_staff',
+                'alamat_staff' => 'nullable|string|max:50',
+                'username_staff' => 'required|string|min:5|max:25|unique:staff,username_staff,' . $id . ',id_staff',
+                'password_staff' => 'nullable|string|min:6|max:25',
             ]);
 
             if ($validator->fails()) {

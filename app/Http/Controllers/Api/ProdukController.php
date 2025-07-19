@@ -91,10 +91,10 @@ class ProdukController extends Controller
             //validasi input
             $validator = Validator::make($request->all(), [
                 'kategori_id' => 'required|exists:kategori,id_kategori',
-                'nama_produk' => 'required|string|max:255',
-                'kode_produk' => 'required|string|max:255|unique:produk,kode_produk',
-                'harga_produk' => 'required|numeric|min:0',
-                'deskripsi_produk' => 'nullable|string',
+                'nama_produk' => 'required|string|max:25',
+                'kode_produk' => 'required|string|max:25|unique:produk,kode_produk',
+                'harga_produk' => 'required|numeric|min:1000|max:999999999999999999',
+                'deskripsi_produk' => 'nullable|string|max:255',
                 'gambar_produk' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
             ]);
 
@@ -194,10 +194,10 @@ class ProdukController extends Controller
             //validasi input
             $validator = Validator::make($request->all(), [
                 'kategori_id' => 'required|exists:kategori,id_kategori',
-                'nama_produk' => 'required|string|max:255',
-                'kode_produk' => 'required|string|max:255|unique:produk,kode_produk,' . $id . ',id_produk',
-                'harga_produk' => 'required|numeric|min:0',
-                'deskripsi_produk' => 'nullable|string',
+                'nama_produk' => 'required|string|max:25',
+                'kode_produk' => 'required|string|max:25|unique:produk,kode_produk,' . $id . ',id_produk',
+                'harga_produk' => 'required|numeric|min:1000|max:999999999999999999',
+                'deskripsi_produk' => 'nullable|string|max:255',
                 'gambar_produk' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
             ]);
 
