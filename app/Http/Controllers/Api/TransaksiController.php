@@ -118,7 +118,7 @@ class TransaksiController extends Controller
                 ], 422);
             }
 
-            // Validasi manual: minimal harus ada satu produk atau jasa
+            // Validasi minimal harus ada satu produk atau jasa
             $detailProduk = $request->input('detail_produk', []);
             $detailJasa = $request->input('detail_jasa', []);
 
