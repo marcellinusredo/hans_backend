@@ -86,7 +86,7 @@ class DashboardController extends Controller
                 ->orderByDesc('total')
                 ->limit(5)
                 ->get();
-            
+
             // Produk hampir habis
             $jumlah_produk_hampir_habis = Produk::where('stok_produk', '<=', 5)->count();
             $produk_hampir_habis = Produk::where('stok_produk', '<=', 5)
@@ -123,6 +123,8 @@ class DashboardController extends Controller
                         'jumlah_pengadaan_bulan_ini' => $jumlah_pengadaan,
                         'produk_terlaris' => $produk_terlaris,
                         'jasa_terlaris' => $jasa_terlaris,
+                        'jumlah_produk_hampir_habis' => $jumlah_produk_hampir_habis,
+                        'produk_hampir_habis' => $produk_hampir_habis,
                     ]);
 
                 case 'super admin':
