@@ -482,25 +482,9 @@ class LaporanController extends Controller
                 ], 404);
             }
 
-        // Tanggal hari ini sebagai folder
-        $tanggal = Carbon::now()->format('Y-m-d');
-
-        // Nama file yang aman
-        $safeJenis = Str::slug($jenis);
-        $fileName = "laporan_{$safeJenis}.pdf";
-
-        // Lokasi penyimpanan
-        $folder = "laporan/{$safeJenis}/{$tanggal}";
-        $relativePath = "{$folder}/{$fileName}";
-
-        $pdf = Pdf::loadView($viewName, compact('data', 'start', 'end'));
-        Storage::disk('public')->put($relativePath, $pdf->output());
-
-        // Kembalikan URL publik ke frontend
-        return response()->json([
-            'success' => true,
-            'url' => asset("storage/{$relativePath}")
-        ]);
+            //stream pdf
+            $pdf = Pdf::loadView($viewName, compact('data', 'start', 'end'));
+            return $pdf->stream("laporan_{$jenis}.pdf");
 
         } catch (\Throwable $e) {
             Log::error("Gagal export PDF: " . $e->getMessage());

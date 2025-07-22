@@ -560,25 +560,14 @@ class TransaksiController extends Controller
                 'detail_transaksi_jasa.jasa'
             ])->findOrFail($id);
 
-            // Format tanggal & nama file
-            $tanggal = Carbon::parse($transaksi->tanggal_transaksi)->format('Y-m-d');
-            $safeInvoiceNumber = Str::slug($transaksi->nomor_invoice_transaksi); // lebih aman
+            //nama file
+            $safeInvoiceNumber = Str::slug($transaksi->nomor_invoice_transaksi);
             $fileName = "invoice-transaksi-{$safeInvoiceNumber}.pdf";
 
-            // Path penyimpanan (relatif terhadap storage/app/public)
-            $folder = "invoice/transaksi/{$tanggal}";
-            $relativePath = "{$folder}/{$fileName}";
-
-
+            //stream pdf
             $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
-            Storage::disk('public')->put($relativePath, $pdf->output());
+            return $pdf->stream($fileName);
 
-
-            // Kembalikan URL publik agar bisa dibuka frontend
-            return response()->json([
-                'status' => true,
-                'url' => asset("storage/{$relativePath}"),
-            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,

@@ -386,24 +386,14 @@ class PengadaanStokController extends Controller
             $pengadaan = PengadaanStok::with(['staff', 'supplier', 'detail_pengadaan_stok.produk'])
                 ->findOrFail($id);
 
-            // Format tanggal & nama file
-            $tanggal = Carbon::parse($pengadaan->tanggal_pengadaan_stok)->format('Y-m-d');
+            // nama file
             $safeInvoiceNumber = Str::slug($pengadaan->nomor_invoice_pengadaan_stok);
             $fileName = "invoice-pengadaan-{$safeInvoiceNumber}.pdf";
 
-            // Path penyimpanan relatif terhadap storage/app/public
-            $folder = "invoice/pengadaan/{$tanggal}";
-            $relativePath = "{$folder}/{$fileName}";
-
-
+            //stream pdf
             $pdf = Pdf::loadView('invoice.pengadaan', compact('pengadaan'));
-            Storage::disk('public')->put($relativePath, $pdf->output());
+            return $pdf->stream($fileName);
 
-            // Kirim URL publik ke frontend
-            return response()->json([
-                'status' => true,
-                'url' => asset("storage/{$relativePath}"),
-            ]);
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
