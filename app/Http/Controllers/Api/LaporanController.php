@@ -493,11 +493,8 @@ class LaporanController extends Controller
         $folder = "laporan/{$safeJenis}/{$tanggal}";
         $relativePath = "{$folder}/{$fileName}";
 
-        // Jika belum ada, generate dan simpan PDF
-        if (!Storage::disk('public')->exists($relativePath)) {
-            $pdf = Pdf::loadView($viewName, compact('data', 'start', 'end'));
-            Storage::disk('public')->put($relativePath, $pdf->output());
-        }
+        $pdf = Pdf::loadView($viewName, compact('data', 'start', 'end'));
+        Storage::disk('public')->put($relativePath, $pdf->output());
 
         // Kembalikan URL publik ke frontend
         return response()->json([

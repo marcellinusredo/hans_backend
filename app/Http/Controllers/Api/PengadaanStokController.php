@@ -395,11 +395,9 @@ class PengadaanStokController extends Controller
             $folder = "invoice/pengadaan/{$tanggal}";
             $relativePath = "{$folder}/{$fileName}";
 
-            // Cek jika belum ada, generate & simpan PDF
-            if (!Storage::disk('public')->exists($relativePath)) {
-                $pdf = Pdf::loadView('invoice.pengadaan', compact('pengadaan'));
-                Storage::disk('public')->put($relativePath, $pdf->output());
-            }
+
+            $pdf = Pdf::loadView('invoice.pengadaan', compact('pengadaan'));
+            Storage::disk('public')->put($relativePath, $pdf->output());
 
             // Kirim URL publik ke frontend
             return response()->json([

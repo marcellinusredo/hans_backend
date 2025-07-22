@@ -101,11 +101,13 @@ class TransaksiController extends Controller
                 'staff_id' => 'required|exists:staff,id_staff',
                 'waktu_transaksi' => 'required|date',
                 'pembayaran_transaksi' => 'required|numeric|min:1|max:999999999999999999',
+                //validasi detail produk
                 'detail_produk' => 'nullable|array',
-                'detail_produk.*.produk_id' => 'nullable|exists:produk,id_produk',
+                'detail_produk.*.produk_id' => 'required|exists:produk,id_produk',
                 'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1|max:2147483647',
+                //validasi detail jasa
                 'detail_jasa' => 'nullable|array',
-                'detail_jasa.*.jasa_id' => 'nullable|exists:jasa,id_jasa',
+                'detail_jasa.*.jasa_id' => 'required|exists:jasa,id_jasa',
             ]);
 
             if ($validator->fails()) {
@@ -116,8 +118,11 @@ class TransaksiController extends Controller
                 ], 422);
             }
 
-            // validasi detail transaksi
-            if (!$request->has('detail_produk') && !$request->has('detail_jasa')) {
+            // Validasi manual: minimal harus ada satu produk atau jasa
+            $detailProduk = $request->input('detail_produk', []);
+            $detailJasa = $request->input('detail_jasa', []);
+
+            if (empty($detailProduk) && empty($detailJasa)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Transaksi harus memiliki minimal satu detail produk atau jasa.',
@@ -266,12 +271,14 @@ class TransaksiController extends Controller
                 'pelanggan_id' => 'required|exists:pelanggan,id_pelanggan',
                 'staff_id' => 'required|exists:staff,id_staff',
                 'waktu_transaksi' => 'required|date',
-                'pembayaran_transaksi' => 'required|numeric|min:1000|max:999999999999999999',
+                'pembayaran_transaksi' => 'required|numeric|min:1|max:999999999999999999',
+                //validasi detail produk
                 'detail_produk' => 'nullable|array',
-                'detail_produk.*.produk_id' => 'nullable|exists:produk,id_produk',
+                'detail_produk.*.produk_id' => 'required|exists:produk,id_produk',
                 'detail_produk.*.jumlah_produk_detail_transaksi' => 'required|numeric|min:1|max:2147483647',
+                //validasi detail jasa
                 'detail_jasa' => 'nullable|array',
-                'detail_jasa.*.jasa_id' => 'nullable|exists:jasa,id_jasa',
+                'detail_jasa.*.jasa_id' => 'required|exists:jasa,id_jasa',
             ]);
 
             if ($validator->fails()) {
@@ -282,8 +289,11 @@ class TransaksiController extends Controller
                 ], 422);
             }
 
-            // validasi detail transaksi
-            if (!$request->has('detail_produk') && !$request->has('detail_jasa')) {
+            // Validasi manual: minimal harus ada satu produk atau jasa
+            $detailProduk = $request->input('detail_produk', []);
+            $detailJasa = $request->input('detail_jasa', []);
+
+            if (empty($detailProduk) && empty($detailJasa)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Transaksi harus memiliki minimal satu detail produk atau jasa.',
@@ -559,11 +569,10 @@ class TransaksiController extends Controller
             $folder = "invoice/transaksi/{$tanggal}";
             $relativePath = "{$folder}/{$fileName}";
 
-            // Jika file belum ada, generate PDF dan simpan
-            if (!Storage::disk('public')->exists($relativePath)) {
-                $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
-                Storage::disk('public')->put($relativePath, $pdf->output());
-            }
+
+            $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
+            Storage::disk('public')->put($relativePath, $pdf->output());
+
 
             // Kembalikan URL publik agar bisa dibuka frontend
             return response()->json([

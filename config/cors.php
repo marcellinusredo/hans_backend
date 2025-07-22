@@ -9,7 +9,7 @@ return [
     'allowed_methods' => ['*'],
 
     // Izinkan origin Vue (Vite dev server)
-    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins' => ['http://localhost:5173','https://hansmotorspeed2.my.id'],
 
     // Boleh kosong jika allowed_origins sudah eksplisit
     'allowed_origins_patterns' => [],
