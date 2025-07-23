@@ -129,7 +129,7 @@ class TransaksiController extends Controller
                 ], 422);
             }
 
-            //Validasi stok produk di sini
+            //Validasi stok produk
             if ($request->has('detail_produk')) {
                 foreach ($request->detail_produk as $dp) {
                     $produk = Produk::findOrFail($dp['produk_id']);
@@ -300,18 +300,31 @@ class TransaksiController extends Controller
                 ], 422);
             }
 
-            // Validasi stok baru
+            // Validasi stok baru saat update
             if ($request->has('detail_produk')) {
+                $transaksiLama = Transaksi::with('detail_transaksi')->findOrFail($id); // gunakan eager load
+
                 foreach ($request->detail_produk as $ndp) {
                     $produk = Produk::findOrFail($ndp['produk_id']);
-                    if ($ndp['jumlah_produk_detail_transaksi'] > $produk->stok_produk) {
+
+                    // Ambil jumlah lama produk ini di transaksi (jika ada)
+                    $jumlahLama = $transaksiLama->detail_transaksi
+                        ->where('produk_id', $ndp['produk_id'])
+                        ->first()
+                        ->jumlah_produk_detail_transaksi ?? 0;
+
+                    $stokSaatIni = $produk->stok_produk;
+                    $stokTersedia = $stokSaatIni + $jumlahLama;
+
+                    if ($ndp['jumlah_produk_detail_transaksi'] > $stokTersedia) {
                         return response()->json([
                             'status' => false,
-                            'message' => 'Jumlah produk ' . $produk->nama_produk . ' melebihi stok tersedia.'
+                            'message' => 'Jumlah produk ' . $produk->nama_produk . ' melebihi stok tersedia (' . $stokTersedia . ').'
                         ], 422);
                     }
                 }
             }
+
 
             DB::beginTransaction();
 
@@ -567,7 +580,6 @@ class TransaksiController extends Controller
             //stream pdf
             $pdf = Pdf::loadView('invoice.transaksi', compact('transaksi'));
             return $pdf->stream($fileName);
-
         } catch (\Throwable $th) {
             return response()->json([
                 'status' => false,
