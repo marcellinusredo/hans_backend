@@ -34,10 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('jasa', JasaController::class);
     Route::get('pengadaan-stok/{id}/invoice', [PengadaanStokController::class, 'cetakInvoice']);
     Route::get('pengadaan-stok/{id}/detail', [PengadaanStokController::class, 'getDetail']);
-    Route::apiResource('pengadaan-stok', PengadaanStokController::class);
+    Route::apiResource('pengadaan-stok', PengadaanStokController::class)->except(['update']);
     Route::get('transaksi/{id}/detail', [TransaksiController::class, 'showDetailTransaksi']);
     Route::get('transaksi/{id}/invoice', [TransaksiController::class, 'cetakInvoice']);;
-    Route::apiResource('transaksi', TransaksiController::class);
+    Route::apiResource('transaksi', TransaksiController::class)->except(['update']);
     Route::prefix('laporan')->group(function () {
         Route::get('/transaksi', [LaporanController::class, 'transaksi']);
         Route::get('/produk-terlaris', [LaporanController::class, 'produkTerlaris']);
